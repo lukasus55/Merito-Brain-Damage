@@ -55,6 +55,9 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		// Switch weapon
 		EnhancedInputComponent->BindAction(SwitchWeaponAction, ETriggerEvent::Triggered, this, &AShooterCharacter::DoSwitchWeapon);
+
+		// Reload gun
+		EnhancedInputComponent->BindAction(ReloadWeaponAction, ETriggerEvent::Triggered, this, &AShooterCharacter::DoReloadWeapon);
 	}
 
 }
@@ -127,6 +130,14 @@ void AShooterCharacter::DoSwitchWeapon()
 
 		// activate the new weapon
 		CurrentWeapon->ActivateWeapon();
+	}
+}
+
+void AShooterCharacter::DoReloadWeapon()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Reload();
 	}
 }
 

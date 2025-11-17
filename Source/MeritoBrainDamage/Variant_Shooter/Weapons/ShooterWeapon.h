@@ -43,7 +43,7 @@ protected:
 	TSubclassOf<AShooterProjectile> ProjectileClass;
 
 	/** Number of bullets in a magazine */
-	UPROPERTY(EditAnywhere, Category="Ammo", meta = (ClampMin = 0, ClampMax = 100))
+	UPROPERTY(EditAnywhere, Category="Ammo", meta = (ClampMin = 0, ClampMax = 99999))
 	int32 MagazineSize = 10;
 
 	/** Number of bullets in the current magazine */
@@ -141,6 +141,11 @@ public:
 
 	/** Stop firing this weapon */
 	void StopFiring();
+
+	void Reload();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void AddAmmo(int32 Amount);
 
 protected:
 

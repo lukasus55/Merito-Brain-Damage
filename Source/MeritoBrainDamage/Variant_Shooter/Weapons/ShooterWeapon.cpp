@@ -75,6 +75,9 @@ void AShooterWeapon::ActivateWeapon()
 
 	// notify the owner
 	WeaponOwner->OnWeaponActivated(this);
+
+	// Force a HUD update so the name and ammo appear immediately
+	WeaponOwner->UpdateWeaponHUD(CurrentBullets, MagazineSize);
 }
 
 void AShooterWeapon::DeactivateWeapon()
@@ -216,8 +219,8 @@ void AShooterWeapon::AddAmmo(int32 Amount)
 		CurrentBullets = MagazineSize;
 	}
 
-	// update the weapon HUD
-	if (WeaponOwner)
+	// Only update the UI if this weapon is NOT hidden (meaning it's currently equipped)
+	if (WeaponOwner && !IsHidden())
 	{
 		WeaponOwner->UpdateWeaponHUD(CurrentBullets, MagazineSize);
 	}

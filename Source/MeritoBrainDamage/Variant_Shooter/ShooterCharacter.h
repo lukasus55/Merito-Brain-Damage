@@ -39,6 +39,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category ="Input")
 	UInputAction* SwitchWeaponAction;
 
+	/** Previous weapon input action */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* PreviousWeaponAction;
+
 	/** Reload weapon input action */
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* ReloadWeaponAction;
@@ -121,9 +125,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void DoSwitchWeapon();
 
+	/** Handles switch to previous weapon input */
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void DoSwitchWeaponPrevious();
+
 	/** Handles weapon reload input */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void DoReloadWeapon();
+
+	/** Check if the character has a specific weapon and return it */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	AShooterWeapon* FindWeaponOfType(TSubclassOf<AShooterWeapon> WeaponClass) const;
 
 public:
 
@@ -145,6 +157,7 @@ public:
 	virtual FVector GetWeaponTargetLocation() override;
 
 	/** Gives a weapon of this class to the owner */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void AddWeaponClass(const TSubclassOf<AShooterWeapon>& WeaponClass) override;
 
 	/** Activates the passed weapon */
@@ -159,9 +172,6 @@ public:
 	//~End IShooterWeaponHolder interface
 
 protected:
-
-	/** Returns true if the character already owns a weapon of the given class */
-	AShooterWeapon* FindWeaponOfType(TSubclassOf<AShooterWeapon> WeaponClass) const;
 
 	/** Called when this character's HP is depleted */
 	void Die();

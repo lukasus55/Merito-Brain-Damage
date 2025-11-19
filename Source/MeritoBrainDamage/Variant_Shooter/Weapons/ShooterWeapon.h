@@ -38,6 +38,14 @@ protected:
 	/** Cast pointer to the weapon owner */
 	IShooterWeaponHolder* WeaponOwner;
 
+	/** The display name of this weapon to show in the UI */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	FText WeaponName;
+
+	/** The slot priority. Lower numbers = Earlier slots. 1 = Slot 1, 2 = Slot 2, etc. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Config")
+	int32 WeaponSlotPriority = 1;
+
 	/** Type of projectiles this weapon will shoot */
 	UPROPERTY(EditAnywhere, Category="Ammo")
 	TSubclassOf<AShooterProjectile> ProjectileClass;
@@ -182,4 +190,7 @@ public:
 
 	/** Returns the current bullet count */
 	int32 GetBulletCount() const { return CurrentBullets; }
+
+	/** Returns the priority for sorting */
+	int32 GetWeaponSlotPriority() const { return WeaponSlotPriority; }
 };

@@ -201,7 +201,8 @@ void AShooterCharacter::PlayFiringMontage(UAnimMontage* Montage)
 
 void AShooterCharacter::AddWeaponRecoil(float Recoil)
 {
-	// apply the recoil as pitch input
+	Recoil = -Recoil;
+	// apply the recoil as reverse of pitch input
 	AddControllerPitchInput(Recoil);
 }
 

@@ -11,6 +11,7 @@
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Pawn.h"
+#include "Kismet/GameplayStatics.h"
 
 AShooterWeapon::AShooterWeapon()
 {
@@ -179,6 +180,12 @@ void AShooterWeapon::FireProjectile(const FVector& TargetLocation)
 	SpawnParams.Instigator = PawnOwner;
 
 	AShooterProjectile* Projectile = GetWorld()->SpawnActor<AShooterProjectile>(ProjectileClass, ProjectileTransform, SpawnParams);
+
+	// Play the shooting sound
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+	}
 
 	// play the firing montage
 	WeaponOwner->PlayFiringMontage(FiringMontage);

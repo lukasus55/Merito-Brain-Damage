@@ -53,8 +53,14 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AShooterCharacter::DoStartFiring);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AShooterCharacter::DoStopFiring);
 
-		// Switch weapon
+		// Switch weapon (Next)
 		EnhancedInputComponent->BindAction(SwitchWeaponAction, ETriggerEvent::Triggered, this, &AShooterCharacter::DoSwitchWeapon);
+
+		// Switch weapon (Previous)
+		EnhancedInputComponent->BindAction(PreviousWeaponAction, ETriggerEvent::Triggered, this, &AShooterCharacter::DoSwitchWeaponPrevious);
+
+		// Reload gun
+		EnhancedInputComponent->BindAction(ReloadWeaponAction, ETriggerEvent::Triggered, this, &AShooterCharacter::DoReloadWeapon);
 	}
 
 }
@@ -130,9 +136,54 @@ void AShooterCharacter::DoSwitchWeapon()
 	}
 }
 
+void AShooterCharacter::DoSwitchWeaponPrevious()
+{
+	// ensure we have at least two weapons to switch between
+	if (OwnedWeapons.Num() > 1)
+	{
+		// deactivate the old weapon
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->DeactivateWeapon();
+		}
+
+		// find the index of the current weapon
+		int32 WeaponIndex = OwnedWeapons.Find(CurrentWeapon);
+
+		// Logic for going BACKWARDS
+		if (WeaponIndex <= 0)
+		{
+			// If we are at 0, loop around to the last weapon in the list
+			WeaponIndex = OwnedWeapons.Num() - 1;
+		}
+		else
+		{
+			// Otherwise just go back one
+			--WeaponIndex;
+		}
+
+		// set the new weapon as current
+		CurrentWeapon = OwnedWeapons[WeaponIndex];
+
+		// activate the new weapon
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->ActivateWeapon();
+		}
+	}
+}
+
+void AShooterCharacter::DoReloadWeapon()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Reload();
+	}
+}
+
 void AShooterCharacter::AttachWeaponMeshes(AShooterWeapon* Weapon)
 {
-	const FAttachmentTransformRules AttachmentRule(EAttachmentRule::SnapToTarget, false);
+	const FAttachmentTransformRules AttachmentRule(EAttachmentRule::KeepRelative, false);
 
 	// attach the weapon actor
 	Weapon->AttachToActor(this, AttachmentRule);
@@ -150,7 +201,8 @@ void AShooterCharacter::PlayFiringMontage(UAnimMontage* Montage)
 
 void AShooterCharacter::AddWeaponRecoil(float Recoil)
 {
-	// apply the recoil as pitch input
+	Recoil = -Recoil;
+	// apply the recoil as reverse of pitch input
 	AddControllerPitchInput(Recoil);
 }
 
@@ -194,8 +246,14 @@ void AShooterCharacter::AddWeaponClass(const TSubclassOf<AShooterWeapon>& Weapon
 
 		if (AddedWeapon)
 		{
-			// add the weapon to the owned list
+			// Add the weapon to the list
 			OwnedWeapons.Add(AddedWeapon);
+
+			// Sort the array based on the WeaponSlotPriority variable
+			OwnedWeapons.Sort([](const AShooterWeapon& A, const AShooterWeapon& B)
+				{
+					return A.GetWeaponSlotPriority() < B.GetWeaponSlotPriority();
+				});
 
 			// if we have an existing weapon, deactivate it
 			if (CurrentWeapon)
@@ -204,12 +262,12 @@ void AShooterCharacter::AddWeaponClass(const TSubclassOf<AShooterWeapon>& Weapon
 			}
 
 			// switch to the new weapon
+			// current logic forces auto-switch to the new pickup. could modify it later.
 			CurrentWeapon = AddedWeapon;
 			CurrentWeapon->ActivateWeapon();
 		}
 	}
 }
-
 void AShooterCharacter::OnWeaponActivated(AShooterWeapon* Weapon)
 {
 	// update the bullet counter

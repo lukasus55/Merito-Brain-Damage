@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraSystem.h"
 #include "ShooterWeaponHolder.h"
 #include "Animation/AnimInstance.h"
 #include "ShooterWeapon.generated.h"
+
 
 class IShooterWeaponHolder;
 class AShooterProjectile;
@@ -38,16 +40,32 @@ protected:
 	/** Cast pointer to the weapon owner */
 	IShooterWeaponHolder* WeaponOwner;
 
+	/** The display name of this weapon to show in the UI */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	FText WeaponName;
+
+	/** The slot priority. Lower numbers = Earlier slots. 1 = Slot 1, 2 = Slot 2, etc. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Config")
+	int32 WeaponSlotPriority = 1;
+
+	/** Sound to play when the weapon is fired */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	USoundBase* FireSound;
+
 	/** Type of projectiles this weapon will shoot */
 	UPROPERTY(EditAnywhere, Category="Ammo")
 	TSubclassOf<AShooterProjectile> ProjectileClass;
 
 	/** Number of bullets in a magazine */
-	UPROPERTY(EditAnywhere, Category="Ammo", meta = (ClampMin = 0, ClampMax = 100))
+	UPROPERTY(EditAnywhere, Category="Ammo", meta = (ClampMin = 0, ClampMax = 99999))
 	int32 MagazineSize = 10;
 
 	/** Number of bullets in the current magazine */
 	int32 CurrentBullets = 0;
+
+	/** The VFX to spawn at the muzzle when firing */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "VFX")
+	UNiagaraSystem* MuzzleFlash;
 	
 	/** Animation montage to play when firing this weapon */
 	UPROPERTY(EditAnywhere, Category="Animation")
@@ -142,6 +160,11 @@ public:
 	/** Stop firing this weapon */
 	void StopFiring();
 
+	void Reload();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void AddAmmo(int32 Amount);
+
 protected:
 
 	/** Fire the weapon */
@@ -177,4 +200,7 @@ public:
 
 	/** Returns the current bullet count */
 	int32 GetBulletCount() const { return CurrentBullets; }
+
+	/** Returns the priority for sorting */
+	int32 GetWeaponSlotPriority() const { return WeaponSlotPriority; }
 };

@@ -75,6 +75,17 @@ protected:
 	/** Timer to handle deferred destruction of this projectile */
 	FTimerHandle DestructionTimer;
 
+	/** How fast the projectile scales up (Interp Speed) */
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	float GrowthSpeed = 2.0f;
+
+	/** The maximum size relative to the start size (e.g., 3.0 = 3x bigger) */
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	float MaxSizeMultiplier = 1.0f;
+
+	/** Internal variable to remember the starting size */
+	FVector InitialScale;
+
 public:	
 
 	/** Constructor */
@@ -90,6 +101,10 @@ protected:
 
 	/** Handles collision */
 	virtual void NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
+
+public:
+	// Override Tick
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 

@@ -73,7 +73,7 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void AShooterCharacter::ShowWeaponWheel()
 {
-	// Create Widget (Same as before)
+	// Create Widget
 	if (!WeaponWheelClass) return;
 	if (!WeaponWheelWidget)
 	{
@@ -88,6 +88,11 @@ void AShooterCharacter::ShowWeaponWheel()
 		if (APlayerController* PC = Cast<APlayerController>(GetController()))
 		{
 			PC->bShowMouseCursor = true;
+
+			// Calculate screen center and warp mouse there
+			int32 ScreenX, ScreenY;
+			PC->GetViewportSize(ScreenX, ScreenY);
+			PC->SetMouseLocation(ScreenX / 2, ScreenY / 2);
 
 			FInputModeGameAndUI InputMode;
 			InputMode.SetWidgetToFocus(WeaponWheelWidget->TakeWidget());
@@ -155,66 +160,69 @@ void AShooterCharacter::DoStopFiring()
 	}
 }
 
+void AShooterCharacter::EquipSpecificWeapon(AShooterWeapon* WeaponToEquip)
+{
+	if (!WeaponToEquip) return;
+	if (CurrentWeapon == WeaponToEquip) return;
+	if (!OwnedWeapons.Contains(WeaponToEquip)) return;
+
+	// Put away old weapon
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->DeactivateWeapon();
+	}
+
+	// Equip new weapon
+	CurrentWeapon = WeaponToEquip;
+	CurrentWeapon->ActivateWeapon();
+}
+
 void AShooterCharacter::DoSwitchWeapon()
 {
 	// ensure we have at least two weapons two switch between
 	if (OwnedWeapons.Num() > 1)
 	{
-		// deactivate the old weapon
 		CurrentWeapon->DeactivateWeapon();
 
-		// find the index of the current weapon in the owned list
 		int32 WeaponIndex = OwnedWeapons.Find(CurrentWeapon);
 
-		// is this the last weapon?
 		if (WeaponIndex == OwnedWeapons.Num() - 1)
 		{
-			// loop back to the beginning of the array
 			WeaponIndex = 0;
 		}
 		else {
-			// select the next weapon index
 			++WeaponIndex;
 		}
 
-		// set the new weapon as current
 		CurrentWeapon = OwnedWeapons[WeaponIndex];
 
-		// activate the new weapon
 		CurrentWeapon->ActivateWeapon();
 	}
 }
 
 void AShooterCharacter::DoSwitchWeaponPrevious()
 {
-	// ensure we have at least two weapons to switch between
 	if (OwnedWeapons.Num() > 1)
 	{
-		// deactivate the old weapon
 		if (CurrentWeapon)
 		{
 			CurrentWeapon->DeactivateWeapon();
 		}
 
-		// find the index of the current weapon
 		int32 WeaponIndex = OwnedWeapons.Find(CurrentWeapon);
 
-		// Logic for going BACKWARDS
+
 		if (WeaponIndex <= 0)
 		{
-			// If we are at 0, loop around to the last weapon in the list
 			WeaponIndex = OwnedWeapons.Num() - 1;
 		}
 		else
 		{
-			// Otherwise just go back one
 			--WeaponIndex;
 		}
 
-		// set the new weapon as current
 		CurrentWeapon = OwnedWeapons[WeaponIndex];
 
-		// activate the new weapon
 		if (CurrentWeapon)
 		{
 			CurrentWeapon->ActivateWeapon();

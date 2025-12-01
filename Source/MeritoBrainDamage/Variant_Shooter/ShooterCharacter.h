@@ -138,6 +138,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void DoStopFiring();
 
+	/** Switch to a specific weapon instance (Used by Weapon Wheel) */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void EquipSpecificWeapon(AShooterWeapon* WeaponToEquip);
+
 	/** Handles switch weapon input */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void DoSwitchWeapon();

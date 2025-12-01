@@ -214,9 +214,11 @@ public:
 	const TSubclassOf<UAnimInstance>& GetThirdPersonAnimInstanceClass() const;
 
 	/** Returns the magazine size */
+	UFUNCTION(BlueprintPure, Category = "Weapon")
 	int32 GetMagazineSize() const { return MagazineSize; };
 
 	/** Returns the current bullet count */
+	UFUNCTION(BlueprintPure, Category = "Weapon")
 	int32 GetBulletCount() const { return CurrentBullets; }
 
 	/** Returns the crosshair scale */

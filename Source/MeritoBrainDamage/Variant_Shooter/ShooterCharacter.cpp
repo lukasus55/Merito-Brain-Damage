@@ -73,49 +73,67 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void AShooterCharacter::ShowWeaponWheel()
 {
-	// Create Widget
+	if (!IsValid(this) || !IsLocallyControlled()) return;
+
 	if (!WeaponWheelClass) return;
-	if (!WeaponWheelWidget)
+
+	if (!IsValid(WeaponWheelWidget))
 	{
-		WeaponWheelWidget = CreateWidget<UUserWidget>(GetWorld(), WeaponWheelClass);
+		if (UWorld* World = GetWorld())
+		{
+			WeaponWheelWidget = CreateWidget<UUserWidget>(World, WeaponWheelClass);
+		}
 	}
 
-	if (WeaponWheelWidget && !WeaponWheelWidget->IsInViewport())
+	// Viewport Logic
+	if (IsValid(WeaponWheelWidget))
 	{
-		WeaponWheelWidget->AddToViewport();
-
-		// The Character cannot set Input Mode directly. We must ask the Controller.
-		if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		// IMPORTANT: Only run this logic if it is NOT already on screen.
+		if (!WeaponWheelWidget->IsInViewport())
 		{
-			PC->bShowMouseCursor = true;
+			WeaponWheelWidget->AddToViewport();
 
-			// Calculate screen center and warp mouse there
-			int32 ScreenX, ScreenY;
-			PC->GetViewportSize(ScreenX, ScreenY);
-			PC->SetMouseLocation(ScreenX / 2, ScreenY / 2);
+			AController* BaseController = GetController();
 
-			FInputModeGameAndUI InputMode;
-			InputMode.SetWidgetToFocus(WeaponWheelWidget->TakeWidget());
-			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			if (APlayerController* PC = Cast<APlayerController>(BaseController))
+			{
+				if (IsValid(PC))
+				{
+					PC->bShowMouseCursor = true;
 
-			PC->SetInputMode(InputMode);
+					int32 ScreenX, ScreenY;
+					PC->GetViewportSize(ScreenX, ScreenY);
+					PC->SetMouseLocation(ScreenX / 2, ScreenY / 2);
+
+					FInputModeGameAndUI InputMode;
+					if (IsValid(WeaponWheelWidget))
+					{
+						InputMode.SetWidgetToFocus(WeaponWheelWidget->TakeWidget());
+					}
+					InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+					PC->SetInputMode(InputMode);
+				}
+			}
 		}
 	}
 }
 
 void AShooterCharacter::HideWeaponWheel()
 {
-	if (WeaponWheelWidget)
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
-		WeaponWheelWidget->RemoveFromParent();
-
-		if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		if (IsValid(PC))
 		{
 			PC->bShowMouseCursor = false;
-
 			FInputModeGameOnly InputMode;
 			PC->SetInputMode(InputMode);
 		}
+	}
+
+	if (IsValid(WeaponWheelWidget))
+	{
+		WeaponWheelWidget->RemoveFromParent();
 	}
 }
 

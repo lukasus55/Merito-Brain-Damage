@@ -40,6 +40,7 @@ protected:
 	TSubclassOf<UUserWidget> WeaponWheelClass;
 
 	/** Pointer to the active instance */
+	UPROPERTY()
 	TObjectPtr<UUserWidget> WeaponWheelWidget;
 
 	/** Fire weapon input action */

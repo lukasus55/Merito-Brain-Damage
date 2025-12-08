@@ -19,22 +19,12 @@ void AShooterPlayerController::BeginPlay()
 	// only spawn touch controls on local player controllers
 	if (IsLocalPlayerController())
 	{
-		if (SVirtualJoystick::ShouldDisplayTouchInterface())
-		{
-			// spawn the mobile controls widget
-			MobileControlsWidget = CreateWidget<UUserWidget>(this, MobileControlsWidgetClass);
 
-			if (MobileControlsWidget)
-			{
-				// add the controls to the player screen
-				MobileControlsWidget->AddToPlayerScreen(0);
+		// Force Input Mode to Game Only
+		FInputModeGameOnly GameInputMode;
+		SetInputMode(GameInputMode);
 
-			} else {
-
-				UE_LOG(LogMeritoBrainDamage, Error, TEXT("Could not spawn mobile controls widget."));
-
-			}
-		}
+		bShowMouseCursor = false;
 
 		// create the bullet counter widget and add it to the screen
 		BulletCounterUI = CreateWidget<UShooterHUD>(this, BulletCounterUIClass);

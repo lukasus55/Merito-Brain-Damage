@@ -14,6 +14,8 @@
 #include "ShooterGameMode.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h" 
+#include "Blueprint/UserWidget.h"
 
 AShooterCharacter::AShooterCharacter()
 {
@@ -64,77 +66,14 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		// Reload gun
 		EnhancedInputComponent->BindAction(ReloadWeaponAction, ETriggerEvent::Triggered, this, &AShooterCharacter::DoReloadWeapon);
 
-		// Bind Weapon Wheel (Hold to Show, Release to Hide)
+		// Weapon Wheel (Hold to Show, Release to Hide)
 		EnhancedInputComponent->BindAction(WeaponWheelAction, ETriggerEvent::Started, this, &AShooterCharacter::ShowWeaponWheel);
 		EnhancedInputComponent->BindAction(WeaponWheelAction, ETriggerEvent::Completed, this, &AShooterCharacter::HideWeaponWheel);
+
+		// The Pause Action
+		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &AShooterCharacter::TogglePauseMenu);
 	}
 
-}
-
-void AShooterCharacter::ShowWeaponWheel()
-{
-	if (!IsValid(this) || !IsLocallyControlled()) return;
-
-	if (!WeaponWheelClass) return;
-
-	if (!IsValid(WeaponWheelWidget))
-	{
-		if (UWorld* World = GetWorld())
-		{
-			WeaponWheelWidget = CreateWidget<UUserWidget>(World, WeaponWheelClass);
-		}
-	}
-
-	// Viewport Logic
-	if (IsValid(WeaponWheelWidget))
-	{
-		// IMPORTANT: Only run this logic if it is NOT already on screen.
-		if (!WeaponWheelWidget->IsInViewport())
-		{
-			WeaponWheelWidget->AddToViewport();
-
-			AController* BaseController = GetController();
-
-			if (APlayerController* PC = Cast<APlayerController>(BaseController))
-			{
-				if (IsValid(PC))
-				{
-					PC->bShowMouseCursor = true;
-
-					int32 ScreenX, ScreenY;
-					PC->GetViewportSize(ScreenX, ScreenY);
-					PC->SetMouseLocation(ScreenX / 2, ScreenY / 2);
-
-					FInputModeGameAndUI InputMode;
-					if (IsValid(WeaponWheelWidget))
-					{
-						InputMode.SetWidgetToFocus(WeaponWheelWidget->TakeWidget());
-					}
-					InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-
-					PC->SetInputMode(InputMode);
-				}
-			}
-		}
-	}
-}
-
-void AShooterCharacter::HideWeaponWheel()
-{
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		if (IsValid(PC))
-		{
-			PC->bShowMouseCursor = false;
-			FInputModeGameOnly InputMode;
-			PC->SetInputMode(InputMode);
-		}
-	}
-
-	if (IsValid(WeaponWheelWidget))
-	{
-		WeaponWheelWidget->RemoveFromParent();
-	}
 }
 
 float AShooterCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -413,4 +352,114 @@ void AShooterCharacter::OnRespawn()
 {
 	// destroy the character to force the PC to respawn
 	Destroy();
+}
+
+void AShooterCharacter::ShowWeaponWheel()
+{
+	if (!IsValid(this) || !IsLocallyControlled()) return;
+
+	if (!WeaponWheelClass) return;
+
+	if (!IsValid(WeaponWheelWidget))
+	{
+		if (UWorld* World = GetWorld())
+		{
+			WeaponWheelWidget = CreateWidget<UUserWidget>(World, WeaponWheelClass);
+		}
+	}
+
+	// Viewport Logic
+	if (IsValid(WeaponWheelWidget))
+	{
+		// IMPORTANT: Only run this logic if it is NOT already on screen.
+		if (!WeaponWheelWidget->IsInViewport())
+		{
+			WeaponWheelWidget->AddToViewport();
+
+			AController* BaseController = GetController();
+
+			if (APlayerController* PC = Cast<APlayerController>(BaseController))
+			{
+				if (IsValid(PC))
+				{
+					PC->bShowMouseCursor = true;
+
+					int32 ScreenX, ScreenY;
+					PC->GetViewportSize(ScreenX, ScreenY);
+					PC->SetMouseLocation(ScreenX / 2, ScreenY / 2);
+
+					FInputModeGameAndUI InputMode;
+					if (IsValid(WeaponWheelWidget))
+					{
+						InputMode.SetWidgetToFocus(WeaponWheelWidget->TakeWidget());
+					}
+					InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+					PC->SetInputMode(InputMode);
+				}
+			}
+		}
+	}
+}
+
+void AShooterCharacter::HideWeaponWheel()
+{
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (IsValid(PC))
+		{
+			PC->bShowMouseCursor = false;
+			FInputModeGameOnly InputMode;
+			PC->SetInputMode(InputMode);
+		}
+	}
+
+	if (IsValid(WeaponWheelWidget))
+	{
+		WeaponWheelWidget->RemoveFromParent();
+	}
+}
+
+void AShooterCharacter::TogglePauseMenu()
+{
+	// Safety Checks
+	if (!IsValid(this) || !IsLocallyControlled()) return;
+
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!IsValid(PC)) return;
+
+	if (!PauseMenuClass) return;
+
+	if (!IsValid(PauseMenuWidget))
+	{
+		PauseMenuWidget = CreateWidget<UUserWidget>(GetWorld(), PauseMenuClass);
+	}
+
+	if (IsValid(PauseMenuWidget))
+	{
+		if (PauseMenuWidget->IsInViewport())
+		{
+			PauseMenuWidget->RemoveFromParent();
+
+			UGameplayStatics::SetGamePaused(GetWorld(), false);
+
+			// Input Mode: Game Only (Hide Cursor)
+			PC->bShowMouseCursor = false;
+			FInputModeGameOnly InputMode;
+			PC->SetInputMode(InputMode);
+		}
+		else
+		{
+			PauseMenuWidget->AddToViewport();
+
+			UGameplayStatics::SetGamePaused(GetWorld(), true);
+
+			// Input Mode: UI (Show Cursor)
+			PC->bShowMouseCursor = true;
+			FInputModeGameAndUI InputMode;
+			InputMode.SetWidgetToFocus(PauseMenuWidget->TakeWidget());
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			PC->SetInputMode(InputMode);
+		}
+	}
 }

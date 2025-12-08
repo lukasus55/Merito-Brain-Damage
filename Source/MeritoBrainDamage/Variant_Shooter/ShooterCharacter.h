@@ -30,6 +30,17 @@ class MERITOBRAINDAMAGE_API AShooterCharacter : public AMeritoBrainDamageCharact
 	UPawnNoiseEmitterComponent* PawnNoiseEmitter;
 
 protected:
+	/** Pause Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* PauseAction;
+
+	/** Pause Menu Class */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUserWidget> PauseMenuClass;
+
+	/** Active Pause Menu Instance */
+	UPROPERTY()
+	TObjectPtr<UUserWidget> PauseMenuWidget;
 
 	/** Input Action for opening the weapon wheel */
 	UPROPERTY(EditAnywhere, Category = "Input|Input Mappings")
@@ -154,6 +165,10 @@ public:
 	/** Handles weapon reload input */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void DoReloadWeapon();
+
+	/** Toggles the pause state */
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void TogglePauseMenu();
 
 	/** Check if the character has a specific weapon and return it */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")

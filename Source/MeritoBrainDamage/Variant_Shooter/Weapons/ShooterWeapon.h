@@ -202,7 +202,24 @@ public:
 	USkeletalMeshComponent* GetThirdPersonMesh() const { return ThirdPersonMesh; };
 
 	/** Getter for the icon */
+	UFUNCTION(BlueprintPure, Category = "Weapon")
 	UTexture2D* GetWeaponIcon() const { return WeaponIcon; }
+
+	// ** Getter for the name */
+	UFUNCTION(BlueprintPure, Category = "Weapon")
+	FText GetWeaponName() const { return WeaponName; }
+
+	// ** Getter for the refire rate */
+	UFUNCTION(BlueprintPure, Category = "Weapon")
+	float GetRefireRate() const { return RefireRate; }
+
+	// ** Getter for the ProjectileClass */
+	UFUNCTION(BlueprintPure, Category = "Weapon")
+	TSubclassOf<AShooterProjectile> GetProjectileClass() const { return ProjectileClass; }
+
+	/** Returns the Default Object (CDO) of the projectile. Useful for reading UI stats like Damage. */
+	UFUNCTION(BlueprintPure, Category = "Weapon")
+	AShooterProjectile* GetProjectileDefaultObject() const;
 
 	/** Getter for the crosshair */
 	UTexture2D* GetWeaponCrosshair() const { return WeaponCrosshair; }

@@ -275,3 +275,14 @@ const TSubclassOf<UAnimInstance>& AShooterWeapon::GetThirdPersonAnimInstanceClas
 {
 	return ThirdPersonAnimInstanceClass;
 }
+
+
+AShooterProjectile* AShooterWeapon::GetProjectileDefaultObject() const
+{
+	if (ProjectileClass)
+	{
+		// This gets the "Master Copy" of the projectile without spawning one
+		return ProjectileClass->GetDefaultObject<AShooterProjectile>();
+	}
+	return nullptr;
+}

@@ -7,21 +7,13 @@
 		{
 			"Name": "MeritoBrainDamage",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine",
-				"AIModule",
-				"UMG"
-			]
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [
 		{
 			"Name": "ModelingToolsEditorMode",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
+			"Enabled": true
 		},
 		{
 			"Name": "StateTree",
@@ -32,9 +24,12 @@
 			"Enabled": true
 		},
 		{
-			"Name": "IconCreator",
+			"Name": "VisualStudioTools",
 			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/Fab/product/1509c8dc-fed5-452b-abdb-b96a6bba4a7a"
+			"SupportedTargetPlatforms": [
+				"Win64"
+			],
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/362651520df94e4fa65492dbcba44ae2"
 		}
 	]
 }

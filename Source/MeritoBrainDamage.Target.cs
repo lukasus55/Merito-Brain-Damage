@@ -8,7 +8,7 @@ public class MeritoBrainDamageTarget : TargetRules
 	public MeritoBrainDamageTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-		DefaultBuildSettings = BuildSettingsVersion.V5;
+		DefaultBuildSettings = BuildSettingsVersion.V2;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_6;
 		ExtraModuleNames.Add("MeritoBrainDamage");
 	}

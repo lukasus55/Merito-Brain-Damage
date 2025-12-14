@@ -36,6 +36,9 @@ AShooterWeapon::AShooterWeapon()
 	ThirdPersonMesh->SetCollisionProfileName(FName("NoCollision"));
 	ThirdPersonMesh->SetFirstPersonPrimitiveType(EFirstPersonPrimitiveType::WorldSpaceRepresentation);
 	ThirdPersonMesh->bOwnerNoSee = true;
+
+	// Default to 0.1 (Normal size)
+	CrosshairScale = FVector2D(0.1f, 0.1f);
 }
 
 void AShooterWeapon::BeginPlay()
@@ -271,4 +274,15 @@ const TSubclassOf<UAnimInstance>& AShooterWeapon::GetFirstPersonAnimInstanceClas
 const TSubclassOf<UAnimInstance>& AShooterWeapon::GetThirdPersonAnimInstanceClass() const
 {
 	return ThirdPersonAnimInstanceClass;
+}
+
+
+AShooterProjectile* AShooterWeapon::GetProjectileDefaultObject() const
+{
+	if (ProjectileClass)
+	{
+		// This gets the "Master Copy" of the projectile without spawning one
+		return ProjectileClass->GetDefaultObject<AShooterProjectile>();
+	}
+	return nullptr;
 }

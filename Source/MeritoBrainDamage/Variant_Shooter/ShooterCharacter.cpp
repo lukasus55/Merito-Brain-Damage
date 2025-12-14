@@ -12,6 +12,10 @@
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
 #include "ShooterGameMode.h"
+#include "Blueprint/UserWidget.h"
+#include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h" 
+#include "Blueprint/UserWidget.h"
 
 AShooterCharacter::AShooterCharacter()
 {
@@ -61,6 +65,13 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		// Reload gun
 		EnhancedInputComponent->BindAction(ReloadWeaponAction, ETriggerEvent::Triggered, this, &AShooterCharacter::DoReloadWeapon);
+
+		// Weapon Wheel (Hold to Show, Release to Hide)
+		EnhancedInputComponent->BindAction(WeaponWheelAction, ETriggerEvent::Started, this, &AShooterCharacter::ShowWeaponWheel);
+		EnhancedInputComponent->BindAction(WeaponWheelAction, ETriggerEvent::Completed, this, &AShooterCharacter::HideWeaponWheel);
+
+		// The Pause Action
+		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &AShooterCharacter::TogglePauseMenu);
 	}
 
 }
@@ -106,66 +117,69 @@ void AShooterCharacter::DoStopFiring()
 	}
 }
 
+void AShooterCharacter::EquipSpecificWeapon(AShooterWeapon* WeaponToEquip)
+{
+	if (!WeaponToEquip) return;
+	if (CurrentWeapon == WeaponToEquip) return;
+	if (!OwnedWeapons.Contains(WeaponToEquip)) return;
+
+	// Put away old weapon
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->DeactivateWeapon();
+	}
+
+	// Equip new weapon
+	CurrentWeapon = WeaponToEquip;
+	CurrentWeapon->ActivateWeapon();
+}
+
 void AShooterCharacter::DoSwitchWeapon()
 {
 	// ensure we have at least two weapons two switch between
 	if (OwnedWeapons.Num() > 1)
 	{
-		// deactivate the old weapon
 		CurrentWeapon->DeactivateWeapon();
 
-		// find the index of the current weapon in the owned list
 		int32 WeaponIndex = OwnedWeapons.Find(CurrentWeapon);
 
-		// is this the last weapon?
 		if (WeaponIndex == OwnedWeapons.Num() - 1)
 		{
-			// loop back to the beginning of the array
 			WeaponIndex = 0;
 		}
 		else {
-			// select the next weapon index
 			++WeaponIndex;
 		}
 
-		// set the new weapon as current
 		CurrentWeapon = OwnedWeapons[WeaponIndex];
 
-		// activate the new weapon
 		CurrentWeapon->ActivateWeapon();
 	}
 }
 
 void AShooterCharacter::DoSwitchWeaponPrevious()
 {
-	// ensure we have at least two weapons to switch between
 	if (OwnedWeapons.Num() > 1)
 	{
-		// deactivate the old weapon
 		if (CurrentWeapon)
 		{
 			CurrentWeapon->DeactivateWeapon();
 		}
 
-		// find the index of the current weapon
 		int32 WeaponIndex = OwnedWeapons.Find(CurrentWeapon);
 
-		// Logic for going BACKWARDS
+
 		if (WeaponIndex <= 0)
 		{
-			// If we are at 0, loop around to the last weapon in the list
 			WeaponIndex = OwnedWeapons.Num() - 1;
 		}
 		else
 		{
-			// Otherwise just go back one
 			--WeaponIndex;
 		}
 
-		// set the new weapon as current
 		CurrentWeapon = OwnedWeapons[WeaponIndex];
 
-		// activate the new weapon
 		if (CurrentWeapon)
 		{
 			CurrentWeapon->ActivateWeapon();
@@ -338,4 +352,114 @@ void AShooterCharacter::OnRespawn()
 {
 	// destroy the character to force the PC to respawn
 	Destroy();
+}
+
+void AShooterCharacter::ShowWeaponWheel()
+{
+	if (!IsValid(this) || !IsLocallyControlled()) return;
+
+	if (!WeaponWheelClass) return;
+
+	if (!IsValid(WeaponWheelWidget))
+	{
+		if (UWorld* World = GetWorld())
+		{
+			WeaponWheelWidget = CreateWidget<UUserWidget>(World, WeaponWheelClass);
+		}
+	}
+
+	// Viewport Logic
+	if (IsValid(WeaponWheelWidget))
+	{
+		// IMPORTANT: Only run this logic if it is NOT already on screen.
+		if (!WeaponWheelWidget->IsInViewport())
+		{
+			WeaponWheelWidget->AddToViewport();
+
+			AController* BaseController = GetController();
+
+			if (APlayerController* PC = Cast<APlayerController>(BaseController))
+			{
+				if (IsValid(PC))
+				{
+					PC->bShowMouseCursor = true;
+
+					int32 ScreenX, ScreenY;
+					PC->GetViewportSize(ScreenX, ScreenY);
+					PC->SetMouseLocation(ScreenX / 2, ScreenY / 2);
+
+					FInputModeGameAndUI InputMode;
+					if (IsValid(WeaponWheelWidget))
+					{
+						InputMode.SetWidgetToFocus(WeaponWheelWidget->TakeWidget());
+					}
+					InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+					PC->SetInputMode(InputMode);
+				}
+			}
+		}
+	}
+}
+
+void AShooterCharacter::HideWeaponWheel()
+{
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (IsValid(PC))
+		{
+			PC->bShowMouseCursor = false;
+			FInputModeGameOnly InputMode;
+			PC->SetInputMode(InputMode);
+		}
+	}
+
+	if (IsValid(WeaponWheelWidget))
+	{
+		WeaponWheelWidget->RemoveFromParent();
+	}
+}
+
+void AShooterCharacter::TogglePauseMenu()
+{
+	// Safety Checks
+	if (!IsValid(this) || !IsLocallyControlled()) return;
+
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!IsValid(PC)) return;
+
+	if (!PauseMenuClass) return;
+
+	if (!IsValid(PauseMenuWidget))
+	{
+		PauseMenuWidget = CreateWidget<UUserWidget>(GetWorld(), PauseMenuClass);
+	}
+
+	if (IsValid(PauseMenuWidget))
+	{
+		if (PauseMenuWidget->IsInViewport())
+		{
+			PauseMenuWidget->RemoveFromParent();
+
+			UGameplayStatics::SetGamePaused(GetWorld(), false);
+
+			// Input Mode: Game Only (Hide Cursor)
+			PC->bShowMouseCursor = false;
+			FInputModeGameOnly InputMode;
+			PC->SetInputMode(InputMode);
+		}
+		else
+		{
+			PauseMenuWidget->AddToViewport();
+
+			UGameplayStatics::SetGamePaused(GetWorld(), true);
+
+			// Input Mode: UI (Show Cursor)
+			PC->bShowMouseCursor = true;
+			FInputModeGameAndUI InputMode;
+			InputMode.SetWidgetToFocus(PauseMenuWidget->TakeWidget());
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			PC->SetInputMode(InputMode);
+		}
+	}
 }

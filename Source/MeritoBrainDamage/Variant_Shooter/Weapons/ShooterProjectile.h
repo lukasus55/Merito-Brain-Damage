@@ -121,4 +121,7 @@ protected:
 	/** Called from the destruction timer to destroy this projectile */
 	void OnDeferredDestruction();
 
+public:
+	UFUNCTION(BlueprintPure, Category = "Projectile")
+	float GetHitDamage() const { return HitDamage; }
 };

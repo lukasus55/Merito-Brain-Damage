@@ -43,11 +43,11 @@ protected:
 	TObjectPtr<UUserWidget> PauseMenuWidget;
 
 	/** Input Action for opening the weapon wheel */
-	UPROPERTY(EditAnywhere, Category = "Input|Input Mappings")
+	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* WeaponWheelAction;
 
 	/** Class of the Weapon Wheel Widget */
-	UPROPERTY(EditAnywhere, Category = "Shooter|UI")
+	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> WeaponWheelClass;
 
 	/** Pointer to the active instance */

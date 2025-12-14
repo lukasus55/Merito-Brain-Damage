@@ -8,7 +8,7 @@
 
 class UInputMappingContext;
 class AShooterCharacter;
-class UShooterBulletCounterUI;
+class UShooterHUD;
 
 /**
  *  Simple PlayerController for a first person shooter game
@@ -43,14 +43,14 @@ protected:
 
 	/** Type of bullet counter UI widget to spawn */
 	UPROPERTY(EditAnywhere, Category="Shooter|UI")
-	TSubclassOf<UShooterBulletCounterUI> BulletCounterUIClass;
+	TSubclassOf<UShooterHUD> BulletCounterUIClass;
 
 	/** Tag to grant the possessed pawn to flag it as the player */
 	UPROPERTY(EditAnywhere, Category="Shooter|Player")
 	FName PlayerPawnTag = FName("Player");
 
 	/** Pointer to the bullet counter UI widget */
-	TObjectPtr<UShooterBulletCounterUI> BulletCounterUI;
+	TObjectPtr<UShooterHUD> BulletCounterUI;
 
 protected:
 

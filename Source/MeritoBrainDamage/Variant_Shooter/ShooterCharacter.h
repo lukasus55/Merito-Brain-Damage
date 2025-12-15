@@ -30,6 +30,29 @@ class MERITOBRAINDAMAGE_API AShooterCharacter : public AMeritoBrainDamageCharact
 	UPawnNoiseEmitterComponent* PawnNoiseEmitter;
 
 protected:
+	/** Pause Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* PauseAction;
+
+	/** Pause Menu Class */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUserWidget> PauseMenuClass;
+
+	/** Active Pause Menu Instance */
+	UPROPERTY()
+	TObjectPtr<UUserWidget> PauseMenuWidget;
+
+	/** Input Action for opening the weapon wheel */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* WeaponWheelAction;
+
+	/** Class of the Weapon Wheel Widget */
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> WeaponWheelClass;
+
+	/** Pointer to the active instance */
+	UPROPERTY()
+	TObjectPtr<UUserWidget> WeaponWheelWidget;
 
 	/** Fire weapon input action */
 	UPROPERTY(EditAnywhere, Category ="Input")
@@ -38,6 +61,14 @@ protected:
 	/** Switch weapon input action */
 	UPROPERTY(EditAnywhere, Category ="Input")
 	UInputAction* SwitchWeaponAction;
+
+	/** Previous weapon input action */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* PreviousWeaponAction;
+
+	/** Reload weapon input action */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* ReloadWeaponAction;
 
 	/** Name of the first person mesh weapon socket */
 	UPROPERTY(EditAnywhere, Category ="Weapons")
@@ -66,7 +97,8 @@ protected:
 	TArray<AShooterWeapon*> OwnedWeapons;
 
 	/** Weapon currently equipped and ready to shoot with */
-	TObjectPtr<AShooterWeapon> CurrentWeapon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+		TObjectPtr<AShooterWeapon> CurrentWeapon;
 
 	UPROPERTY(EditAnywhere, Category ="Destruction", meta = (ClampMin = 0, ClampMax = 10, Units = "s"))
 	float RespawnTime = 5.0f;
@@ -104,6 +136,12 @@ public:
 
 public:
 
+	/** Shows the wheel and enables mouse */
+	void ShowWeaponWheel();
+
+	/** Hides the wheel and disables mouse */
+	void HideWeaponWheel();
+
 	/** Handles start firing input */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void DoStartFiring();
@@ -112,9 +150,34 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void DoStopFiring();
 
+	/** Switch to a specific weapon instance (Used by Weapon Wheel) */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void EquipSpecificWeapon(AShooterWeapon* WeaponToEquip);
+
 	/** Handles switch weapon input */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void DoSwitchWeapon();
+
+	/** Handles switch to previous weapon input */
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void DoSwitchWeaponPrevious();
+
+	/** Handles weapon reload input */
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void DoReloadWeapon();
+
+	/** Toggles the pause state */
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void TogglePauseMenu();
+
+	/** Check if the character has a specific weapon and return it */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	AShooterWeapon* FindWeaponOfType(TSubclassOf<AShooterWeapon> WeaponClass) const;
+
+public:
+	/** Returns the list of weapons the player currently owns */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	TArray<AShooterWeapon*> GetOwnedWeapons() const { return OwnedWeapons; }
 
 public:
 
@@ -136,6 +199,7 @@ public:
 	virtual FVector GetWeaponTargetLocation() override;
 
 	/** Gives a weapon of this class to the owner */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void AddWeaponClass(const TSubclassOf<AShooterWeapon>& WeaponClass) override;
 
 	/** Activates the passed weapon */
@@ -150,9 +214,6 @@ public:
 	//~End IShooterWeaponHolder interface
 
 protected:
-
-	/** Returns true if the character already owns a weapon of the given class */
-	AShooterWeapon* FindWeaponOfType(TSubclassOf<AShooterWeapon> WeaponClass) const;
 
 	/** Called when this character's HP is depleted */
 	void Die();

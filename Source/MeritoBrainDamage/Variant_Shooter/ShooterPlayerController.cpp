@@ -8,7 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
 #include "ShooterCharacter.h"
-#include "ShooterHUD.h"
+#include "ShooterBulletCounterUI.h"
 #include "MeritoBrainDamage.h"
 #include "Widgets/Input/SVirtualJoystick.h"
 
@@ -19,15 +19,25 @@ void AShooterPlayerController::BeginPlay()
 	// only spawn touch controls on local player controllers
 	if (IsLocalPlayerController())
 	{
+		if (SVirtualJoystick::ShouldDisplayTouchInterface())
+		{
+			// spawn the mobile controls widget
+			MobileControlsWidget = CreateWidget<UUserWidget>(this, MobileControlsWidgetClass);
 
-		// Force Input Mode to Game Only
-		FInputModeGameOnly GameInputMode;
-		SetInputMode(GameInputMode);
+			if (MobileControlsWidget)
+			{
+				// add the controls to the player screen
+				MobileControlsWidget->AddToPlayerScreen(0);
 
-		bShowMouseCursor = false;
+			} else {
+
+				UE_LOG(LogMeritoBrainDamage, Error, TEXT("Could not spawn mobile controls widget."));
+
+			}
+		}
 
 		// create the bullet counter widget and add it to the screen
-		BulletCounterUI = CreateWidget<UShooterHUD>(this, BulletCounterUIClass);
+		BulletCounterUI = CreateWidget<UShooterBulletCounterUI>(this, BulletCounterUIClass);
 
 		if (BulletCounterUI)
 		{

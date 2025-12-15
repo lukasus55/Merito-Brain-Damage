@@ -18,9 +18,8 @@ public class MeritoBrainDamage : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"UMG",
-			"Slate",
-			"Niagara"
-        });
+			"Slate"
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 

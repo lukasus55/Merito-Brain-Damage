@@ -42,9 +42,6 @@ void AShooterProjectile::BeginPlay()
 	
 	// ignore the pawn that shot this projectile
 	CollisionComponent->IgnoreActorWhenMoving(GetInstigator(), true);
-
-	// Save the size we spawned at
-	InitialScale = GetActorScale3D();
 }
 
 void AShooterProjectile::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -96,25 +93,6 @@ void AShooterProjectile::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Ot
 
 		// destroy the projectile right away
 		Destroy();
-	}
-}
-
-void AShooterProjectile::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	// Calculate how big we want to be
-	FVector TargetScale = InitialScale * MaxSizeMultiplier;
-	FVector CurrentScale = GetActorScale3D();
-
-	// If we haven't reached the max size yet...
-	if (!CurrentScale.Equals(TargetScale, 0.01f))
-	{
-		// "VInterpTo" creates a smooth curve (starts fast, slows down as it reaches the limit)
-		FVector NewScale = FMath::VInterpTo(CurrentScale, TargetScale, DeltaTime, GrowthSpeed);
-
-		// Apply the scale to the whole actor (Collision + Mesh + VFX)
-		SetActorScale3D(NewScale);
 	}
 }
 

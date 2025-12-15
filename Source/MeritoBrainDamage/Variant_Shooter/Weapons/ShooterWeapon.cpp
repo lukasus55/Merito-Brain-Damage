@@ -11,8 +11,6 @@
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Pawn.h"
-#include "Kismet/GameplayStatics.h"
-#include "NiagaraFunctionLibrary.h"
 
 AShooterWeapon::AShooterWeapon()
 {
@@ -36,9 +34,6 @@ AShooterWeapon::AShooterWeapon()
 	ThirdPersonMesh->SetCollisionProfileName(FName("NoCollision"));
 	ThirdPersonMesh->SetFirstPersonPrimitiveType(EFirstPersonPrimitiveType::WorldSpaceRepresentation);
 	ThirdPersonMesh->bOwnerNoSee = true;
-
-	// Default to 0.1 (Normal size)
-	CrosshairScale = FVector2D(0.1f, 0.1f);
 }
 
 void AShooterWeapon::BeginPlay()
@@ -53,7 +48,7 @@ void AShooterWeapon::BeginPlay()
 	PawnOwner = Cast<APawn>(GetOwner());
 
 	// fill the first ammo clip
-	// CurrentBullets = MagazineSize;
+	CurrentBullets = MagazineSize;
 
 	// attach the meshes to the owner
 	WeaponOwner->AttachWeaponMeshes(this);
@@ -80,9 +75,6 @@ void AShooterWeapon::ActivateWeapon()
 
 	// notify the owner
 	WeaponOwner->OnWeaponActivated(this);
-
-	// Force a HUD update so the name and ammo appear immediately
-	WeaponOwner->UpdateWeaponHUD(CurrentBullets, MagazineSize);
 }
 
 void AShooterWeapon::DeactivateWeapon()
@@ -99,10 +91,6 @@ void AShooterWeapon::DeactivateWeapon()
 
 void AShooterWeapon::StartFiring()
 {
-	if (CurrentBullets <= 0)
-	{
-		return; 
-	}
 	// raise the firing flag
 	bIsFiring = true;
 
@@ -185,26 +173,6 @@ void AShooterWeapon::FireProjectile(const FVector& TargetLocation)
 
 	AShooterProjectile* Projectile = GetWorld()->SpawnActor<AShooterProjectile>(ProjectileClass, ProjectileTransform, SpawnParams);
 
-	// Play the shooting sound
-	if (FireSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-	}
-
-	if (MuzzleFlash && FirstPersonMesh)
-	{
-		// Spawn the VFX attached to the Muzzle Socket
-		UNiagaraFunctionLibrary::SpawnSystemAttached(
-			MuzzleFlash,
-			FirstPersonMesh,
-			MuzzleSocketName,
-			FVector::ZeroVector,
-			FRotator::ZeroRotator,
-			EAttachLocation::SnapToTarget,
-			true
-		);
-	}
-
 	// play the firing montage
 	WeaponOwner->PlayFiringMontage(FiringMontage);
 
@@ -217,38 +185,11 @@ void AShooterWeapon::FireProjectile(const FVector& TargetLocation)
 	// if the clip is depleted, reload it
 	if (CurrentBullets <= 0)
 	{
-		StopFiring();
-	}
-
-	// update the weapon HUD
-	WeaponOwner->UpdateWeaponHUD(CurrentBullets, MagazineSize);
-}
-
-// Reload is not used anywhere but can be useful for debbuging.
-void AShooterWeapon::Reload()
-{
-	CurrentBullets = MagazineSize;
-
-	// update the weapon HUD
-	WeaponOwner->UpdateWeaponHUD(CurrentBullets, MagazineSize);
-}
-
-void AShooterWeapon::AddAmmo(int32 Amount)
-{
-	// Add the ammo
-	CurrentBullets += Amount;
-
-	// Clamp it so we don't exceed the "MagazineSize" (which acts as Max Ammo Cap)
-	if (CurrentBullets > MagazineSize)
-	{
 		CurrentBullets = MagazineSize;
 	}
 
-	// Only update the UI if this weapon is NOT hidden (meaning it's currently equipped)
-	if (WeaponOwner && !IsHidden())
-	{
-		WeaponOwner->UpdateWeaponHUD(CurrentBullets, MagazineSize);
-	}
+	// update the weapon HUD
+	WeaponOwner->UpdateWeaponHUD(CurrentBullets, MagazineSize);
 }
 
 FTransform AShooterWeapon::CalculateProjectileSpawnTransform(const FVector& TargetLocation) const
@@ -274,15 +215,4 @@ const TSubclassOf<UAnimInstance>& AShooterWeapon::GetFirstPersonAnimInstanceClas
 const TSubclassOf<UAnimInstance>& AShooterWeapon::GetThirdPersonAnimInstanceClass() const
 {
 	return ThirdPersonAnimInstanceClass;
-}
-
-
-AShooterProjectile* AShooterWeapon::GetProjectileDefaultObject() const
-{
-	if (ProjectileClass)
-	{
-		// This gets the "Master Copy" of the projectile without spawning one
-		return ProjectileClass->GetDefaultObject<AShooterProjectile>();
-	}
-	return nullptr;
 }

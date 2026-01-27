@@ -28,9 +28,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Audio Settings")
     float LoadAudioSettings();
 
-    UFUNCTION(BlueprintCallable, Category = "Audio Global", meta = (WorldContext = "WorldContextObject"))
-    static void InitializeAudioGlobal(const UObject* WorldContextObject, USoundMix* Mix, USoundClass* Class);
-
 protected:
     // Helper to get the settings pointer easily
     UGameUserSettings* GetSettings() const;

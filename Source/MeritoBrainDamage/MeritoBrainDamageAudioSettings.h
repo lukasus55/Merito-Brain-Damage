@@ -7,6 +7,7 @@
 #include "GameFramework/GameUserSettings.h"
 #include "Sound/SoundMix.h"
 #include "Sound/SoundClass.h"
+#include "MeritoBrainDamageSaveGame.h"
 #include "MeritoBrainDamageAudioSettings.generated.h"
 
 /**
@@ -20,6 +21,12 @@ class MERITOBRAINDAMAGE_API UMeritoBrainDamageAudioSettings : public UUserWidget
 public:
     UFUNCTION(BlueprintCallable, Category = "Audio Settings")
     void SetVolume(USoundClass* TargetClass, float Volume);
+
+    UFUNCTION(BlueprintCallable, Category = "Audio Settings")
+    void SaveAudioSettings(float CurrentVolume);
+
+    UFUNCTION(BlueprintCallable, Category = "Audio Settings")
+    float LoadAudioSettings();
 
 protected:
     // Helper to get the settings pointer easily

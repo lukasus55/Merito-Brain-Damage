@@ -30,3 +30,32 @@ void UMeritoBrainDamageAudioSettings::SetVolume(USoundClass* TargetClass, float 
 
     UGameplayStatics::PushSoundMixModifier(GetWorld(), GlobalSoundMix);
 }
+
+void UMeritoBrainDamageAudioSettings::SaveAudioSettings(float CurrentVolume)
+{
+    // Create an instance of SaveGame object
+    if (UMeritoBrainDamageSaveGame* SaveInst = Cast<UMeritoBrainDamageSaveGame>(UGameplayStatics::CreateSaveGameObject(UMeritoBrainDamageSaveGame::StaticClass())))
+    {
+        SaveInst->MasterVolume = CurrentVolume;
+
+        UGameplayStatics::SaveGameToSlot(SaveInst, TEXT("Settings"), 0);
+
+        UE_LOG(LogTemp, Log, TEXT("Audio Saved: %f"), CurrentVolume);
+    }
+}
+
+float UMeritoBrainDamageAudioSettings::LoadAudioSettings()
+{
+    if (UGameplayStatics::DoesSaveGameExist(TEXT("Settings"), 0))
+    {
+        USaveGame* LoadedGame = UGameplayStatics::LoadGameFromSlot(TEXT("Settings"), 0);
+
+        if (UMeritoBrainDamageSaveGame* SaveInst = Cast<UMeritoBrainDamageSaveGame>(LoadedGame))
+        {
+            return SaveInst->MasterVolume;
+        }
+    }
+
+    // Default to 0.6 if no save file exists
+    return 0.6f;
+}

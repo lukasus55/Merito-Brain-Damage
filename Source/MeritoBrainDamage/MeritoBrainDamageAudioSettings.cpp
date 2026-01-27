@@ -18,6 +18,7 @@ void UMeritoBrainDamageAudioSettings::SetVolume(USoundClass* TargetClass, float 
         return;
     }
 
+
     UGameplayStatics::SetSoundMixClassOverride(
         GetWorld(),
         GlobalSoundMix,  // The mix modifier
@@ -25,7 +26,7 @@ void UMeritoBrainDamageAudioSettings::SetVolume(USoundClass* TargetClass, float 
         Volume,          // New volume (0.0 - 1.0)
         1.0f,            // Pitch (1.0 = normal)
         0.0f,            // Fade in time (0.0 = instant)
-        true             // Apply to existing sounds immediately
+        true             // Apply to children (not sure bout this one tbh)
     );
 
     UGameplayStatics::PushSoundMixModifier(GetWorld(), GlobalSoundMix);

@@ -72,6 +72,9 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		// The Pause Action
 		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &AShooterCharacter::TogglePauseMenu);
+
+		// The Help Action
+		EnhancedInputComponent->BindAction(HelpAction, ETriggerEvent::Started, this, &AShooterCharacter::ToggleHelpMenu);
 	}
 
 }
@@ -458,6 +461,45 @@ void AShooterCharacter::TogglePauseMenu()
 			PC->bShowMouseCursor = true;
 			FInputModeGameAndUI InputMode;
 			InputMode.SetWidgetToFocus(PauseMenuWidget->TakeWidget());
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			PC->SetInputMode(InputMode);
+		}
+	}
+}
+void AShooterCharacter::ToggleHelpMenu()
+{
+	// Safety Checks
+	if (!IsValid(this) || !IsLocallyControlled()) return;
+
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!IsValid(PC)) return;
+
+	if (!HelpMenuClass) return;
+
+	if (!IsValid(HelpMenuWidget))
+	{
+		HelpMenuWidget = CreateWidget<UUserWidget>(GetWorld(), HelpMenuClass);
+	}
+
+	if (IsValid(HelpMenuWidget))
+	{
+		if (HelpMenuWidget->IsInViewport())
+		{
+			HelpMenuWidget->RemoveFromParent();
+
+			// Input Mode: Game Only (Hide Cursor)
+			PC->bShowMouseCursor = false;
+			FInputModeGameOnly InputMode;
+			PC->SetInputMode(InputMode);
+		}
+		else
+		{
+			HelpMenuWidget->AddToViewport();
+
+			// Input Mode: UI (Show Cursor)
+			PC->bShowMouseCursor = true;
+			FInputModeGameAndUI InputMode;
+			InputMode.SetWidgetToFocus(HelpMenuWidget->TakeWidget());
 			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 			PC->SetInputMode(InputMode);
 		}

@@ -42,6 +42,18 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UUserWidget> PauseMenuWidget;
 
+	/** Help Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* HelpAction;
+
+	/** Help Menu Class */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUserWidget> HelpMenuClass;
+
+	/** Active Help Menu Instance */
+	UPROPERTY()
+	TObjectPtr<UUserWidget> HelpMenuWidget;
+
 	/** Input Action for opening the weapon wheel */
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* WeaponWheelAction;
@@ -169,6 +181,10 @@ public:
 	/** Toggles the pause state */
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void TogglePauseMenu();
+
+	/** Toggles the help menu state */
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ToggleHelpMenu();
 
 	/** Check if the character has a specific weapon and return it */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")

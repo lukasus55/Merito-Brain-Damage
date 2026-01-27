@@ -64,3 +64,20 @@ bool UMeritoBrainDamageVideoSettings::GetCurrentVSyncState() const
     }
     return false;
 }
+
+void UMeritoBrainDamageVideoSettings::SetMaxFrameRate(int32 NewLimit)
+{
+    if (UGameUserSettings* Settings = GetSettings())
+    {
+        Settings->SetFrameRateLimit(NewLimit);
+    }
+}
+
+int32 UMeritoBrainDamageVideoSettings::GetCurrentFrameRateLimit() const
+{
+    if (UGameUserSettings* Settings = GetSettings())
+    {
+        return Settings->GetFrameRateLimit();
+    }
+    return 0; // 0 = Unlimited
+}
